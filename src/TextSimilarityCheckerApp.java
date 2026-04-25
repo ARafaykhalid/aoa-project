@@ -11,6 +11,7 @@ import java.util.List;
 
 public class TextSimilarityCheckerApp extends JFrame {
 
+    // Dark theme colors used throughout the app.
     private static final Color BG = new Color(15, 18, 28);
     private static final Color CARD = new Color(24, 28, 40);
     private static final Color CARD_2 = new Color(30, 35, 50);
@@ -22,13 +23,19 @@ public class TextSimilarityCheckerApp extends JFrame {
     private static final Color DANGER = new Color(232, 85, 99);
     private static final Color SUCCESS = new Color(68, 194, 132);
 
+    // Input areas for both texts.
     private final JTextArea textArea1 = new JTextArea();
     private final JTextArea textArea2 = new JTextArea();
+
+    // Output area used to show result details.
     private final JTextArea resultArea = new JTextArea();
+
+    // Labels for similarity score and status.
     private final JLabel scoreLabel = new JLabel("Similarity: 0.00%");
     private final JLabel statusLabel = new JLabel("Ready");
 
     public TextSimilarityCheckerApp() {
+        // Apply theme before creating UI.
         applyDarkTheme();
 
         setTitle("Text Similarity Checker");
@@ -37,6 +44,7 @@ public class TextSimilarityCheckerApp extends JFrame {
         setLocationRelativeTo(null);
         setResizable(true);
 
+        // Root container that holds all major panels.
         JPanel root = new JPanel(new BorderLayout(16, 16));
         root.setBackground(BG);
         root.setBorder(new EmptyBorder(18, 18, 18, 18));
@@ -47,6 +55,7 @@ public class TextSimilarityCheckerApp extends JFrame {
         root.add(createBottomPanel(), BorderLayout.SOUTH);
     }
 
+    // Applies Nimbus look and feel and keeps the colors consistent.
     private void applyDarkTheme() {
         UIManager.put("control", CARD);
         UIManager.put("info", CARD);
@@ -76,6 +85,7 @@ public class TextSimilarityCheckerApp extends JFrame {
         }
     }
 
+    // Builds the top header section with title and similarity score.
     private JComponent createHeader() {
         JPanel header = new JPanel(new BorderLayout(8, 8));
         header.setOpaque(false);
@@ -102,10 +112,10 @@ public class TextSimilarityCheckerApp extends JFrame {
 
         header.add(titleBlock, BorderLayout.WEST);
         header.add(scoreLabel, BorderLayout.EAST);
-
         return header;
     }
 
+    // Builds the middle section with the two input cards.
     private JComponent createCenterPanel() {
         JPanel center = new JPanel(new GridLayout(1, 2, 16, 16));
         center.setOpaque(false);
@@ -114,6 +124,7 @@ public class TextSimilarityCheckerApp extends JFrame {
         return center;
     }
 
+    // Creates one input card with a text box, file button, and sample button.
     private JComponent createInputCard(String title, JTextArea area, int sampleId) {
         CardPanel card = new CardPanel();
         card.setLayout(new BorderLayout(12, 12));
@@ -136,7 +147,9 @@ public class TextSimilarityCheckerApp extends JFrame {
         top.add(label, BorderLayout.WEST);
         top.add(hint, BorderLayout.EAST);
 
+        // Apply shared text area styling.
         styleTextArea(area);
+
         JScrollPane scroll = new JScrollPane(area);
         scroll.setBorder(new LineBorder(BORDER, 1, true));
         scroll.getViewport().setBackground(CARD_2);
@@ -144,9 +157,11 @@ public class TextSimilarityCheckerApp extends JFrame {
         scroll.getVerticalScrollBar().setUnitIncrement(14);
         scroll.getHorizontalScrollBar().setUnitIncrement(14);
 
+        // Load file button.
         AccentButton loadButton = new AccentButton("Load File", ACCENT, ACCENT_HOVER);
         loadButton.addActionListener(e -> loadTextFromFile(area));
 
+        // Sample button for quick testing.
         AccentButton sampleButton = new AccentButton("Load Sample", CARD_2, new Color(52, 58, 78));
         sampleButton.addActionListener(e -> area.setText(getSampleText(sampleId)));
 
@@ -158,10 +173,10 @@ public class TextSimilarityCheckerApp extends JFrame {
         card.add(top, BorderLayout.NORTH);
         card.add(scroll, BorderLayout.CENTER);
         card.add(actions, BorderLayout.SOUTH);
-
         return card;
     }
 
+    // Builds the bottom section with the result box and action buttons.
     private JComponent createBottomPanel() {
         JPanel bottom = new JPanel(new BorderLayout(12, 12));
         bottom.setOpaque(false);
@@ -178,6 +193,7 @@ public class TextSimilarityCheckerApp extends JFrame {
         resultTitle.setFont(new Font("SansSerif", Font.BOLD, 16));
         resultTitle.setForeground(TEXT);
 
+        // Result area is read-only because it only displays output.
         resultArea.setEditable(false);
         resultArea.setLineWrap(true);
         resultArea.setWrapStyleWord(true);
@@ -203,6 +219,7 @@ public class TextSimilarityCheckerApp extends JFrame {
         resultCard.add(resultTop, BorderLayout.NORTH);
         resultCard.add(resultScroll, BorderLayout.CENTER);
 
+        // Buttons for clearing and comparing.
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         actions.setOpaque(false);
 
@@ -217,10 +234,10 @@ public class TextSimilarityCheckerApp extends JFrame {
 
         bottom.add(resultCard, BorderLayout.CENTER);
         bottom.add(actions, BorderLayout.SOUTH);
-
         return bottom;
     }
 
+    // Styles a text area so it matches the rest of the UI.
     private void styleTextArea(JTextArea area) {
         area.setLineWrap(true);
         area.setWrapStyleWord(true);
@@ -233,6 +250,7 @@ public class TextSimilarityCheckerApp extends JFrame {
         area.setSelectedTextColor(Color.WHITE);
     }
 
+    // Opens a file chooser and loads the selected text file into a text area.
     private void loadTextFromFile(JTextArea target) {
         JFileChooser chooser = new JFileChooser();
         int choice = chooser.showOpenDialog(this);
@@ -255,6 +273,7 @@ public class TextSimilarityCheckerApp extends JFrame {
         }
     }
 
+    // Clears all fields and resets the screen.
     private void clearAll() {
         textArea1.setText("");
         textArea2.setText("");
@@ -265,10 +284,17 @@ public class TextSimilarityCheckerApp extends JFrame {
         statusLabel.setForeground(MUTED);
     }
 
+    // Main comparison flow:
+    // 1. Read inputs
+    // 2. Preprocess texts
+    // 3. Run LCS
+    // 4. Compute similarity
+    // 5. Show output
     private void compareTexts() {
         String raw1 = textArea1.getText().trim();
         String raw2 = textArea2.getText().trim();
 
+        // Both texts must contain some content.
         if (raw1.isEmpty() || raw2.isEmpty()) {
             JOptionPane.showMessageDialog(
                     this,
@@ -279,9 +305,11 @@ public class TextSimilarityCheckerApp extends JFrame {
             return;
         }
 
+        // Clean and tokenize both texts.
         String[] tokens1 = preprocess(raw1);
         String[] tokens2 = preprocess(raw2);
 
+        // Avoid comparison if preprocessing removes everything.
         if (tokens1.length == 0 || tokens2.length == 0) {
             JOptionPane.showMessageDialog(
                     this,
@@ -292,7 +320,10 @@ public class TextSimilarityCheckerApp extends JFrame {
             return;
         }
 
+        // Run LCS on token arrays.
         LcsResult result = lcs(tokens1, tokens2);
+
+        // Similarity is based on LCS length over the larger text length.
         double similarity = (double) result.length / Math.max(tokens1.length, tokens2.length) * 100.0;
 
         scoreLabel.setText(String.format("Similarity: %.2f%%", similarity));
@@ -300,6 +331,7 @@ public class TextSimilarityCheckerApp extends JFrame {
         statusLabel.setText(similarity >= 70 ? "High similarity detected" : "Comparison complete");
         statusLabel.setForeground(similarity >= 70 ? DANGER : MUTED);
 
+        // Build readable result text.
         StringBuilder output = new StringBuilder();
         output.append("Text 1 tokens: ").append(tokens1.length).append('\n');
         output.append("Text 2 tokens: ").append(tokens2.length).append('\n');
@@ -318,6 +350,8 @@ public class TextSimilarityCheckerApp extends JFrame {
         resultArea.setCaretPosition(0);
     }
 
+    // Preprocesses the text by converting it to lowercase, removing punctuation,
+    // collapsing extra spaces, and splitting it into words.
     private String[] preprocess(String text) {
         String cleaned = text.toLowerCase()
                 .replaceAll("[^a-z0-9\\s]", " ")
@@ -330,11 +364,14 @@ public class TextSimilarityCheckerApp extends JFrame {
         return cleaned.split(" ");
     }
 
+    // Dynamic Programming implementation of Longest Common Subsequence.
+    // dp[i][j] stores the LCS length for the first i tokens of a and first j tokens of b.
     private LcsResult lcs(String[] a, String[] b) {
         int n = a.length;
         int m = b.length;
         int[][] dp = new int[n + 1][m + 1];
 
+        // Fill the DP table.
         for (int i = 1; i <= n; i++) {
             for (int j = 1; j <= m; j++) {
                 if (a[i - 1].equals(b[j - 1])) {
@@ -345,6 +382,7 @@ public class TextSimilarityCheckerApp extends JFrame {
             }
         }
 
+        // Backtrack to recover the actual matched subsequence.
         List<String> sequence = new ArrayList<>();
         int i = n, j = m;
 
@@ -363,6 +401,7 @@ public class TextSimilarityCheckerApp extends JFrame {
         return new LcsResult(dp[n][m], sequence);
     }
 
+    // Sample text used for testing without file input.
     private String getSampleText(int id) {
         if (id == 1) {
             return """
@@ -378,6 +417,7 @@ public class TextSimilarityCheckerApp extends JFrame {
                 """;
     }
 
+    // Holds the final LCS result.
     private static class LcsResult {
         final int length;
         final List<String> sequence;
@@ -388,6 +428,7 @@ public class TextSimilarityCheckerApp extends JFrame {
         }
     }
 
+    // Rounded panel used to make the UI look like cards.
     private static class CardPanel extends JPanel {
         CardPanel() {
             setOpaque(true);
@@ -404,6 +445,7 @@ public class TextSimilarityCheckerApp extends JFrame {
         }
     }
 
+    // Custom button with rounded shape and hover effect..
     private static class AccentButton extends JButton {
         private final Color normal;
         private final Color hover;
@@ -437,6 +479,7 @@ public class TextSimilarityCheckerApp extends JFrame {
             });
         }
 
+        // Renderer
         @Override
         protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g.create();
